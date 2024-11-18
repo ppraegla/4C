@@ -96,6 +96,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          build-args: "DEPENDENCIES_HASH=${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}"
           push: true
           tags: ${{ env.REGISTRY }}/${{ steps.repository-to-lower-case.outputs.repository }}-${{ env.IMAGE_SUFFIX
             }}:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
