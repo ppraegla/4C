@@ -35,10 +35,11 @@ jobs:
       # The repo gets cloned to `/__w/4C/4C` ($GITHUB_WORKSPACE) while ${{ github.workspace }} points to `/home/runner/work/4C/4C`.`
       # Use $GITHUB_WORKSPACE instead of ${{ github.workspace }}
       - uses: actions/checkout@v4
+      - run: echo $DEPENDENCIES_HASH
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - run: apt update
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -125,4 +126,3 @@ jobs:
         uses: re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
-

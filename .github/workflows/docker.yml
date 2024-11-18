@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_SUFFIX: dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 40d8b295
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 39a13a02
   IMAGE_PATH: ghcr.io/4c-multiphysics/4c-dependencies
 
 concurrency:
@@ -109,4 +109,3 @@ jobs:
     #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
     #     subject-digest: ${{ steps.push.outputs.digest }}
     #     push-to-registry: true
-
