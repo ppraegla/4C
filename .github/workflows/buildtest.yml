@@ -21,7 +21,7 @@ jobs:
       CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:39a13a02
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -89,7 +89,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - name: Setup developer environment for testing
         run: |
           cd $GITHUB_WORKSPACE

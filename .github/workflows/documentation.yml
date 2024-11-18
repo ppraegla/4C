@@ -32,7 +32,7 @@ jobs:
       - name: Check docker hash
         uses: ./.github/actions/compute-and-check-dependencies-hash
         with:
-          docker_image_hash: $FOUR_C_DOCKER_DEPENDENCIES_HASH
+          docker_image_hash: $DEPENDENCIES_HASH
       - uses: ./.github/actions/configure_4C
         with:
           cmake-preset: docker
