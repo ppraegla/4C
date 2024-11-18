@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 FROM ubuntu:focal
-LABEL org.opencontainers.image.description="Image containing all the 4C dependencies required for building and testing 4C"
+LABEL org.opencontainers.image.description="Image containing all the dependencies required for building and testing 4C"
 LABEL org.4c-multiphysics.project=4C
 
 # Prevents tzdata asking for user feedback
@@ -73,7 +73,7 @@ LABEL org.4c-multiphysics.project=4C
 # # Install SuiteSparse 5.4.0
 # RUN /dependencies/current/suitesparse/install.sh ${INSTALL_DIR}
 
-# # Install superLU_dist 2.5
+# # Install superLU_dist 7.2.0
 # RUN /dependencies/current/superlu_dist/install.sh ${INSTALL_DIR}
 
 # # Install qhull 2012.1
