@@ -46,6 +46,8 @@ jobs:
           retention-days: 1
 
   readthedocs:
+    env:
+      CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-dependencies:945d02ee
