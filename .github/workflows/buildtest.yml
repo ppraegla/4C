@@ -8,9 +8,6 @@ on:
     branches:
       - 'main'
 
-env:
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: 40d8b295
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -21,7 +18,7 @@ jobs:
       CMAKE_PRESET: docker
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:39a13a02
+      image: ghcr.io/4c-multiphysics/4c-dependencies:945d02ee
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}
@@ -71,7 +68,7 @@ jobs:
     needs: gcc9_build
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c-dependencies:40d8b295
+      image: ghcr.io/4c-multiphysics/4c-dependencies:945d02ee
       options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
       credentials:
         username: ${{ github.actor }}

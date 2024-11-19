@@ -2,11 +2,18 @@ name: Docker
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/docker.yml'
+      - 'dependencies/current/'
+      - 'dependencies/testing/'
 
 env:
   REGISTRY: ghcr.io
   IMAGE_SUFFIX: dependencies
-  FOUR_C_DOCKER_DEPENDENCIES_HASH: ea8aca56
+  FOUR_C_DOCKER_DEPENDENCIES_HASH: 945d02ee
   IMAGE_NAME: ghcr.io/4c-multiphysics/4c-dependencies
 
 concurrency:
@@ -16,6 +23,7 @@ concurrency:
 jobs:
   check-if-docker-build-is-required:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     outputs:
       dependencies_hash: ${{ steps.compute-dependencies-hash.outputs.dependencies_hash }}
       build_docker_image: ${{ steps.check-if-build-is-required.outputs.build }}
@@ -62,7 +70,8 @@ jobs:
       id-token: write
       #
     needs: check-if-docker-build-is-required
-    if: ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image == 'true' }}
+    if: github.event_name == 'workflow_dispatch' && ${{ needs.check-if-docker-build-is-required.outputs.build_docker_image
+      == 'true' }}
     steps:
       # Hack to get the repository name as lower case as Github does not provide this function: https://github.com/orgs/community/discussions/25768
       - id: repository-to-lower-case
@@ -115,11 +124,11 @@ jobs:
 
   tag-image-as-latest:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
     steps:
-      - run: echo ${{ github.event_name }}
       - name: Log in to the Container registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
