@@ -7,7 +7,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_SUFFIX: dependencies
   FOUR_C_DOCKER_DEPENDENCIES_HASH: ea8aca56
-  IMAGE_PATH: ghcr.io/4c-multiphysics/4c-dependencies
+  IMAGE_NAME: ghcr.io/4c-multiphysics/4c-dependencies
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,7 +35,7 @@ jobs:
         name: Check if the docker image needs to be built
         run: |
           exit_code=0
-          docker manifest inspect ${{ env.IMAGE_PATH }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
+          docker manifest inspect ${{ env.IMAGE_NAME }}:$COMPUTED_DOCKER_DEPENDENCIES_HASH > /dev/null || exit_code=$?
           echo $exit_code
           case $exit_code in
             0)
@@ -86,7 +86,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
-          images: ${{ env.IMAGE_PATH }}
+          images: ${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.description=Image containing all the dependencies required for building and testing 4C
       # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
@@ -109,6 +109,25 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v1.1.4
         with:
-          subject-name: ${{ env.IMAGE_PATH }}
+          subject-name: ${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+  tag-image-as-latest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - run: echo ${{ github.event_name }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull current dependencies image and tag it with latest
+        run: |
+          docker pull $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }}
+          docker image tag $IMAGE_NAME:${{ env.FOUR_C_DOCKER_DEPENDENCIES_HASH }} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest
