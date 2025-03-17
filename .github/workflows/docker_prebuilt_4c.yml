@@ -1,6 +1,7 @@
 name: 4C docker image
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: [nightly_tests]
     types: [completed]
@@ -50,4 +51,38 @@ jobs:
           file: docker/prebuilt_4C/Dockerfile
           push: true
           tags: ${{ env.IMAGE_NAME }}:main
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build_4c_minimal_image:
+    runs-on: ubuntu-latest
+    # if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == '4C-multiphysics/4C'
+    #   }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
+        with:
+          images: ${{ env.IMAGE_NAME }}-minimal
+          labels: |
+            org.opencontainers.image.description=Image containing the 4C executable
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+        with:
+          context: docker/prebuilt_4C_minimal
+          file: docker/prebuilt_4C_minimal/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_NAME }}-minimal:main
           labels: ${{ steps.meta.outputs.labels }}
