@@ -7,7 +7,7 @@
 
 # TODO make a new image instead of removing stuff from the dependencies image
 
-FROM ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:latest
+FROM ghcr.io/4c-multiphysics/4c-dependencies-ubuntu24.04:main
 
 USER root
 
@@ -36,10 +36,12 @@ RUN mkdir 4C-source/build && cd 4C-source/build && \
 RUN rm -r /home/user/4C-source
 
 # Copy everything to a new image to get rid of the previous layers
-FROM ubuntu:24.04
+FROM scratch
 COPY --from=0 / /
 LABEL org.opencontainers.image.description="Image containing the 4C executable"
 LABEL org.4c-multiphysics.project=4C
 
 USER user
 WORKDIR /home/user
+
+CMD [ "/bin/bash" ]
