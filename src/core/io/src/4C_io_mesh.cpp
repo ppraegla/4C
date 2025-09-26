@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <set>
 
 
 
@@ -36,8 +37,113 @@ std::string Core::IO::MeshInput::describe(VerbosityLevel level)
   std23::unreachable();
 }
 
+
 template <unsigned dim>
-void Core::IO::MeshInput::assert_valid(const Mesh<dim>& mesh)
+Core::IO::MeshInput::Mesh<dim>::Mesh() : raw_mesh_(Utils::make_owner<RawMesh<dim>>())
+{
+}
+
+
+template <unsigned dim>
+Core::IO::MeshInput::Mesh<dim>::Mesh(RawMesh<dim>&& raw_mesh)
+    : raw_mesh_(Utils::make_owner<RawMesh<dim>>(std::move(raw_mesh)))
+{
+  default_fill_indices();
+}
+
+
+template <unsigned dim>
+Core::IO::MeshInput::Mesh<dim> Core::IO::MeshInput::Mesh<dim>::create_view(RawMesh<dim>& raw_mesh)
+{
+  Mesh mesh;
+  mesh.raw_mesh_ = Utils::make_view(&raw_mesh);
+  mesh.default_fill_indices();
+  return mesh;
+}
+
+
+template <unsigned dim>
+bool Core::IO::MeshInput::Mesh<dim>::has_point_data(const std::string& field_name) const
+{
+  return raw_mesh_->point_data.find(field_name) != raw_mesh_->point_data.end();
+}
+
+
+template <unsigned dim>
+Core::IO::MeshInput::Mesh<dim> Core::IO::MeshInput::Mesh<dim>::filter_by_cell_block_ids(
+    const std::vector<ExternalIdType>& cell_block_ids) const
+{
+  Mesh filtered_mesh;
+  filtered_mesh.raw_mesh_ = Utils::make_view(raw_mesh_.get());
+  filtered_mesh.cell_blocks_ids_filter_ = cell_block_ids;
+
+  // Check that the given cell-block IDs exist in the mesh, and collect all point IDs that are used
+  // by the cell-blocks
+  std::set<size_t> point_ids_set;
+  for (const auto id : cell_block_ids)
+  {
+    FOUR_C_ASSERT_ALWAYS(raw_mesh_->cell_blocks.contains(id),
+        "You are trying to filter the mesh by cell-block ID {}, but the mesh does not contain "
+        "a cell-block with this ID.",
+        id);
+
+    for (const auto& cell : raw_mesh_->cell_blocks.at(id).cells())
+    {
+      point_ids_set.insert(cell.begin(), cell.end());
+    }
+  }
+  filtered_mesh.point_ids_filter_.assign(point_ids_set.begin(), point_ids_set.end());
+
+  // Filter the point sets depending on whether they contain points that are still in the filtered
+  // mesh
+  for (const auto& [id, data] : raw_mesh_->point_sets)
+  {
+    // Either all points of the point set are in the filtered mesh, or none
+    bool has_relevant_points = false;
+    bool has_irrelevant_points = false;
+
+    for (const auto point_id : data.point_ids)
+    {
+      if (point_ids_set.contains(point_id))
+        has_relevant_points = true;
+      else
+        has_irrelevant_points = true;
+    }
+
+    if (has_relevant_points && has_irrelevant_points)
+    {
+      FOUR_C_THROW(
+          "While filtering the mesh by cell-block IDs, point-set {} contains some points "
+          "that are used by the remaining cell-blocks, and some that are not. Point-sets "
+          "must either contain all or none of the remaining points.",
+          id);
+    }
+
+    if (has_relevant_points) filtered_mesh.point_sets_ids_filter_.emplace_back(id);
+  }
+
+  return filtered_mesh;
+}
+
+
+template <unsigned dim>
+void Core::IO::MeshInput::Mesh<dim>::default_fill_indices()
+{
+  FOUR_C_ASSERT(raw_mesh_.get() != nullptr, "Internal error: RawMesh pointer must not be null.");
+
+  cell_blocks_ids_filter_.resize(raw_mesh_->cell_blocks.size());
+  std::ranges::copy(raw_mesh_->cell_blocks | std::views::keys, cell_blocks_ids_filter_.begin());
+
+  point_sets_ids_filter_.resize(raw_mesh_->point_sets.size());
+  std::ranges::copy(raw_mesh_->point_sets | std::views::keys, point_sets_ids_filter_.begin());
+
+  point_ids_filter_.resize(raw_mesh_->points.size());
+  std::iota(point_ids_filter_.begin(), point_ids_filter_.end(), 0);
+}
+
+
+template <unsigned dim>
+void Core::IO::MeshInput::assert_valid(const RawMesh<dim>& mesh)
 {
   FOUR_C_ASSERT_ALWAYS(!mesh.points.empty(), "The mesh has no points.");
 
@@ -118,39 +224,37 @@ void Core::IO::MeshInput::print(const Mesh<dim>& mesh, std::ostream& os, Verbosi
 {
   if (verbose >= VerbosityLevel::summary)
   {
-    auto num_elements = std::accumulate(mesh.cell_blocks.begin(), mesh.cell_blocks.end(), 0,
+    auto num_elements = std::accumulate(mesh.cell_blocks().begin(), mesh.cell_blocks().end(), 0,
         [](int sum, const auto& block) { return sum + block.second.size(); });
 
-    os << "Mesh consists of " << mesh.points.size() << " points and " << num_elements
-       << " cells organized in " << mesh.cell_blocks.size() << " cell-blocks and "
-       << mesh.point_sets.size() << " point-sets.\n\n";
+    os << "Mesh consists of " << mesh.points().size() << " points and " << num_elements
+       << " cells organized in " << mesh.cell_blocks().size() << " cell-blocks and "
+       << mesh.point_sets().size() << " point-sets.\n\n";
   }
   if (verbose >= VerbosityLevel::detailed_summary)
   {
     if (verbose == VerbosityLevel::full)
     {
-      std::size_t i = 0;
-      for (const auto& point : mesh.points)
+      for (const auto& point : mesh.points_with_data())
       {
-        if (mesh.external_ids.has_value())
+        if (point.external_id() != invalid_external_id)
         {
-          os << "  " << mesh.external_ids->at(i) << ": [";
+          os << "  " << point.external_id() << ": [";
         }
         else
         {
           os << "  [";
         }
-        for (const auto& coord : point)
+        for (const auto& coord : point.coordinate())
         {
           os << std::format("{:10.6g},", coord);
         }
         os << "]\n";
-        i++;
       }
       os << "\n";
     }
     os << "cell-blocks:\n";
-    for (const auto& [id, cell_block] : mesh.cell_blocks)
+    for (const auto& [id, cell_block] : mesh.cell_blocks())
     {
       os << "  cell-block " << id;
       if (cell_block.name.has_value()) os << " (" << *cell_block.name << ")";
@@ -160,7 +264,7 @@ void Core::IO::MeshInput::print(const Mesh<dim>& mesh, std::ostream& os, Verbosi
     os << "\n";
 
     os << "point-sets:\n";
-    for (const auto& [ps_id, ps] : mesh.point_sets)
+    for (const auto& [ps_id, ps] : mesh.point_sets())
     {
       os << "  point-set " << ps_id;
       if (ps.name.has_value()) os << " (" << *ps.name << ")";
@@ -218,10 +322,12 @@ void Core::IO::MeshInput::print(const PointSet& point_set, std::ostream& os, Ver
   os << "\n";
 }
 
-template void Core::IO::MeshInput::assert_valid(const Mesh<3>& mesh);
+template void Core::IO::MeshInput::assert_valid(const RawMesh<3>& mesh);
 template void Core::IO::MeshInput::print(
     const Mesh<3>& mesh, std::ostream& os, VerbosityLevel verbose);
 template void Core::IO::MeshInput::print(
     const CellBlock<3>& block, std::ostream& os, VerbosityLevel verbose);
+
+template class Core::IO::MeshInput::Mesh<3>;
 
 FOUR_C_NAMESPACE_CLOSE
