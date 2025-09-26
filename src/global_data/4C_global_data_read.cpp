@@ -1585,12 +1585,24 @@ void Global::read_conditions(
       {
         case Core::Conditions::EntityType::legacy_id:
         {
+          if (dnode_fenode.size() == 0 && dline_fenode.size() == 0 && dsurf_fenode.size() == 0 &&
+              dvol_fenode.size() == 0)
+          {
+            FOUR_C_THROW(
+                "{} condition {} uses legacy_id entity type but no legacy entities were defined in "
+                "the input file.\n"
+                "This is probably because the geometry is handled in an external file.\n"
+                "If this is the case, you must specify a specific entity type (node_set_id or "
+                "element_block_id).\n",
+                condition_definition.name(), entity_id);
+          }
           switch (condition->g_type())
           {
             case Core::Conditions::geometry_type_point:
               if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dnode_fenode.size())
               {
                 FOUR_C_THROW(
+                    // "Could not read set from entity type"
                     "DPoint {} not in range [0:{}[\n"
                     "DPoint condition on non existent DPoint?",
                     entity_id, dnode_fenode.size());
