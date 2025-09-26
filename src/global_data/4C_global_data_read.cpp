@@ -1602,9 +1602,9 @@ void Global::read_conditions(
               if (entity_id < 0 or static_cast<unsigned>(entity_id) >= dnode_fenode.size())
               {
                 FOUR_C_THROW(
-                    // "Could not read set from entity type"
                     "DPoint {} not in range [0:{}[\n"
-                    "DPoint condition on non existent DPoint?",
+                    "DPoint condition on non existent DPoint?"
+                    "Could not read set from entity type.",
                     entity_id, dnode_fenode.size());
               }
               condition->set_nodes(dnode_fenode[entity_id]);
@@ -1614,7 +1614,8 @@ void Global::read_conditions(
               {
                 FOUR_C_THROW(
                     "DLine {} not in range [0:{}[\n"
-                    "DLine condition on non existent DLine?",
+                    "DLine condition on non existent DLine?"
+                    "Could not read set from entity type.",
                     entity_id, dline_fenode.size());
               }
               condition->set_nodes(dline_fenode[entity_id]);
@@ -1624,7 +1625,8 @@ void Global::read_conditions(
               {
                 FOUR_C_THROW(
                     "DSurface {} not in range [0:{}[\n"
-                    "DSurface condition on non existent DSurface?",
+                    "DSurface condition on non existent DSurface?"
+                    "Could not read set from entity type.",
                     entity_id, dsurf_fenode.size());
               }
               condition->set_nodes(dsurf_fenode[entity_id]);
