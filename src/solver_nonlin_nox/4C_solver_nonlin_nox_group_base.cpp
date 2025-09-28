@@ -102,22 +102,26 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::GroupBase::clone(::NOX::CopyType 
 
 Teuchos::RCP<const ::NOX::Abstract::Vector> NOX::Nln::GroupBase::getXPtr() const
 {
-  FOUR_C_THROW("Not implemented.");
+  FOUR_C_THROW("NOX::Nln::GroupBase::getXPtr() - Not implemented.");
 }
 
 Teuchos::RCP<const ::NOX::Abstract::Vector> NOX::Nln::GroupBase::getFPtr() const
 {
-  FOUR_C_THROW("Not implemented.");
+  FOUR_C_THROW("NOX::Nln::GroupBase::getFPtr() - Not implemented.");
 }
 
 Teuchos::RCP<const ::NOX::Abstract::Vector> NOX::Nln::GroupBase::getGradientPtr() const
 {
-  FOUR_C_THROW("Not implemented.");
+  FOUR_C_THROW("NOX::Nln::GroupBase::getGradientPtr() - Not implemented.");
 }
 
 Teuchos::RCP<const ::NOX::Abstract::Vector> NOX::Nln::GroupBase::getNewtonPtr() const
 {
-  FOUR_C_THROW("Not implemented.");
+#if (FOUR_C_TRILINOS_INTERNAL_VERSION_GE(2025, 4))
+  FOUR_C_THROW("NOX::Nln::GroupBase::getNewtonPtr() - Not implemented.");
+#else
+  return Teuchos::rcpFromRef(NewtonVector);
+#endif
 }
 
 void NOX::Nln::GroupBase::setX(const ::NOX::Abstract::Vector& y)
