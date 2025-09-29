@@ -37,7 +37,9 @@ jobs:
         with:
           build-directory: ${{ github.workspace }}/build
           source-directory: ${{ github.workspace }}
-          number-of-chunks: 90 # we need fine grained test chunks to avoid running out of storage
+          number-of-chunks: 30
+          # We need to limit the number of tests * processors to avoid accumulation of large temporary data
+          maximum-number-of-processor-tests: 50
 
   clang18_coverage_test:
     needs: clang18_coverage_build

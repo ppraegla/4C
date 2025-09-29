@@ -10,6 +10,10 @@ inputs:
   number-of-chunks:
     description: Number of chunks
     required: true
+  maximum-number-of-processor-tests:
+    description: Maximum number of tests * processor within a chunk
+    required: false
+    default: ""
   junit-report-artifact-name:
     description: Name of the job that reports the junit summary (leave out if previous runtime should
       not be used)
@@ -47,12 +51,17 @@ runs:
         python -m venv venv
         . venv/bin/activate
         pip install junitparser==3.2.0
-        TEST_CHUNKS=`python .github/actions/chunk_test_suite/chunk_test_suite.py -c $NUMBER_OF_CHUNKS $JUNIT_REPORT_FLAG 4C_ctest_suite_summary.json`
+        EXTRA_ARGS="-c $NUMBER_OF_CHUNKS"
+        if [ -n "$NUMBER_OF_PROCESSOR_TESTS" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS --max-proctests $NUMBER_OF_PROCESSOR_TESTS"
+        fi
+        TEST_CHUNKS=`python .github/actions/chunk_test_suite/chunk_test_suite.py $EXTRA_ARGS $JUNIT_REPORT_FLAG 4C_ctest_suite_summary.json`
         echo "Test chunks: $TEST_CHUNKS"
         echo "chunk_array=$TEST_CHUNKS" >> $GITHUB_OUTPUT
       env:
         BUILD_DIRECTORY: ${{ inputs.build-directory }}
         NUMBER_OF_CHUNKS: ${{ inputs.number-of-chunks }}
+        NUMBER_OF_PROCESSOR_TESTS: ${{ inputs.maximum-number-of-processor-tests }}
         SOURCE_DIRECTORY: ${{ inputs.source-directory }}
         JUNIT_REPORT_FLAG: ${{ steps.download-junit-reports.outcome == 'success' && format('--junit-report
           {0}', inputs.junit-report-artifact-name) || '' }}

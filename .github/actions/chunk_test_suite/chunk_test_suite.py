@@ -8,7 +8,7 @@
 import json
 import argparse
 import junitparser
-import os
+import sys
 
 
 def detect_processors(properties):
@@ -35,6 +35,13 @@ def main():
         default=15,
         type=int,
         help="Number of chunks to divide the test suite into",
+    )
+    parser.add_argument(
+        "--max-proctests",
+        "-m",
+        default=sys.maxsize,
+        type=int,
+        help="Maximum number of tests * processor within a chunk",
     )
     parser.add_argument(
         "--junit-report",
@@ -64,6 +71,7 @@ def main():
 
     # determine expected processor runtimes per test
     expected_test_processor_times = []
+    num_test_procs = []
     for test_number, test in enumerate(test_summary["tests"]):
         properties = test["properties"]
         name = test["name"]
@@ -76,6 +84,7 @@ def main():
             expected_proc_runtime = timeout * num_procs
 
         expected_test_processor_times.append(expected_proc_runtime)
+        num_test_procs.append(num_procs)
 
     # compute average processor time per chunk
     average_processor_time = sum(expected_test_processor_times) / args.chunks
@@ -83,15 +92,21 @@ def main():
     # estimate optimal chunks
     chunks = []
     current_chunk_run_time = 0
+    current_chunk_num_tests = 0
     chunk_start = 1
-    for test_number, expected_proc_time in enumerate(
-        expected_test_processor_times, start=1
+    for test_number, (expected_proc_time, num_procs) in enumerate(
+        zip(expected_test_processor_times, num_test_procs), start=1
     ):
         current_chunk_run_time += expected_proc_time
-        if current_chunk_run_time > average_processor_time:
+        current_chunk_num_tests += num_procs
+        if (
+            current_chunk_run_time > average_processor_time
+            or current_chunk_num_tests > args.max_proctests
+        ):
             chunks.append((chunk_start, test_number, current_chunk_run_time))
             chunk_start = test_number + 1
             current_chunk_run_time = 0
+            current_chunk_num_tests = 0
 
     chunks.append(
         (chunk_start, len(expected_test_processor_times), current_chunk_run_time)
