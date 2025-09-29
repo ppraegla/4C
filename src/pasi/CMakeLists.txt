@@ -14,8 +14,7 @@ set(_dependencies
     core
     global_data
     inpar
-    particle_algorithm
-    particle_wall
+    particle
     solver_nonlin_nox
     structure
     structure_new

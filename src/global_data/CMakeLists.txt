@@ -15,7 +15,7 @@ set(_dependencies
     global_legacy_module
     inpar
     mat
-    particle_engine
+    particle
     )
 
 four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

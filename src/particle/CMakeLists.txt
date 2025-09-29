@@ -14,10 +14,7 @@ set(_dependencies
     core
     global_data
     inpar
-    particle_engine
-    particle_interaction
-    particle_rigidbody
-    particle_wall
+    mat
     )
 
 four_c_add_internal_dependency(${AUTO_DEFINED_MODULE_NAME} ${_dependencies})

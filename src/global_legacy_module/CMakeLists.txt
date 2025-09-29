@@ -26,7 +26,7 @@ set(_dependencies
     membrane
     module_registry
     mortar
-    particle_engine
+    particle
     porofluid_pressure_based_elast_scatra
     porofluid_pressure_based_ele
     red_airways
