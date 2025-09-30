@@ -403,10 +403,6 @@ namespace Global
       return parameters_->sublist("VOLMORTAR COUPLING");
     }
     const Teuchos::ParameterList& mor_params() const { return parameters_->sublist("MOR"); };
-    const Teuchos::ParameterList& mesh_partitioning_params() const
-    {
-      return parameters_->sublist("MESH PARTITIONING");
-    }
     const Teuchos::ParameterList& nurbs_params() const { return parameters_->sublist("NURBS"); }
 
     const Teuchos::ParameterList& problem_type_params() const

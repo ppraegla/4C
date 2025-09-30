@@ -14,19 +14,21 @@ FOUR_C_NAMESPACE_OPEN
 Core::IO::InputSpec Core::Rebalance::valid_parameters()
 {
   using namespace Core::IO::InputSpecBuilders;
-  Core::IO::InputSpec spec = group("MESH PARTITIONING",
+  Core::IO::InputSpec spec = group<MeshPartitioningParameters>("MESH PARTITIONING",
       {
 
           parameter<Core::Rebalance::RebalanceType>("METHOD",
               {.description = "Type of rebalance/partition algorithm to be used for decomposing "
                               "the entire mesh into subdomains for parallel computing.",
-                  .default_value = Core::Rebalance::RebalanceType::hypergraph}),
+                  .default_value = Core::Rebalance::RebalanceType::hypergraph,
+                  .store = in_struct(&MeshPartitioningParameters::rebalance_type)}),
 
           parameter<double>("IMBALANCE_TOL",
               {.description =
                       "Tolerance for relative imbalance of subdomain sizes for graph partitioning "
                       "of unstructured meshes read from input files.",
-                  .default_value = 1.1}),
+                  .default_value = 1.1,
+                  .store = in_struct(&MeshPartitioningParameters::imbalance_tol)}),
 
           parameter<int>("MIN_ELE_PER_PROC",
               {.description =
@@ -34,7 +36,8 @@ Core::IO::InputSpec Core::Rebalance::valid_parameters()
                       "MPI rank during redistribution. Use 0 to not interfere with the minimal "
                       "size "
                       "of a subdomain.",
-                  .default_value = 0})},
+                  .default_value = 0,
+                  .store = in_struct(&MeshPartitioningParameters::min_ele_per_proc)})},
       {.required = false});
   return spec;
 }

@@ -38,6 +38,26 @@ namespace Core::Rebalance
                 // via a global collision search
   };
 
+  struct MeshPartitioningParameters
+  {
+    /**
+     * The type of rebalance/partition algorithm to be used.
+     */
+    RebalanceType rebalance_type = RebalanceType::hypergraph;
+
+    /**
+     * Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured
+     * meshes read from input files.
+     */
+    double imbalance_tol = 1.1;
+
+    /**
+     * This parameter defines the minimum number of elements to be assigned to any MPI rank during
+     * redistribution. Use 0 to not interfere with the minimal size of a subdomain.
+     */
+    int min_ele_per_proc = 0;
+  };
+
 
   /**
    * Additional parameters that govern the rebalancing process.
@@ -47,7 +67,7 @@ namespace Core::Rebalance
     /**
      * How to partition then mesh among processes.
      */
-    Teuchos::ParameterList mesh_partitioning_parameters;
+    MeshPartitioningParameters mesh_partitioning_parameters;
 
     /**
      * Geometric search parameters for certain partitioning methods.
