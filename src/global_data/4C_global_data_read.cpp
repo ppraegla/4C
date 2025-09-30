@@ -225,12 +225,14 @@ std::unique_ptr<Core::IO::MeshReader> Global::read_discretization(
   auto output_control = problem.output_control_file();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  auto meshreader_out = std::make_unique<Core::IO::MeshReader>(
-      input, Core::Rebalance::RebalanceParameters{
-                 .mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
-                 .geometric_search_parameters = Problem::instance()->geometric_search_params(),
-                 .io_parameters = Problem::instance()->io_params(),
-             });
+  auto meshreader_out = std::make_unique<Core::IO::MeshReader>(input,
+      Core::Rebalance::RebalanceParameters{
+          .mesh_partitioning_parameters =
+              Problem::instance()->parameters().get<Core::Rebalance::MeshPartitioningParameters>(
+                  "MESH PARTITIONING"),
+          .geometric_search_parameters = Problem::instance()->geometric_search_params(),
+          .io_parameters = Problem::instance()->io_params(),
+      });
   auto& meshreader = *meshreader_out;
 
   MPI_Comm comm = problem.get_communicators().local_comm();
@@ -1121,7 +1123,9 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         read_materials(*micro_problem, micro_input_file);
 
         Core::IO::MeshReader micromeshreader(micro_input_file,
-            {.mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
+            {.mesh_partitioning_parameters = Problem::instance()
+                    ->parameters()
+                    .get<Core::Rebalance::MeshPartitioningParameters>("MESH PARTITIONING"),
                 .geometric_search_parameters = Problem::instance()->geometric_search_params(),
                 .io_parameters = Problem::instance()->io_params()});
 
@@ -1251,7 +1255,9 @@ void Global::read_microfields_np_support(Global::Problem& problem)
     read_materials(*micro_problem, micro_input_file);
 
     Core::IO::MeshReader micromeshreader(micro_input_file,
-        {.mesh_partitioning_parameters = Problem::instance()->mesh_partitioning_params(),
+        {.mesh_partitioning_parameters =
+                Problem::instance()->parameters().get<Core::Rebalance::MeshPartitioningParameters>(
+                    "MESH PARTITIONING"),
             .geometric_search_parameters = Problem::instance()->geometric_search_params(),
             .io_parameters = Problem::instance()->io_params()});
     micromeshreader.attach_discretization(structdis_micro, "STRUCTURE");

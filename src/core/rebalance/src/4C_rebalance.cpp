@@ -105,12 +105,12 @@ void Core::Rebalance::rebalance_discretization(Core::FE::Discretization& discret
     graph = Core::Rebalance::build_graph(discretization, row_elements);
 
   // Create partitioning parameters
-  const double imbalance_tol = parameters.mesh_partitioning_parameters.get<double>("IMBALANCE_TOL");
+  const double imbalance_tol = parameters.mesh_partitioning_parameters.imbalance_tol;
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
-  const int minele_per_proc = parameters.mesh_partitioning_parameters.get<int>("MIN_ELE_PER_PROC");
+  const int minele_per_proc = parameters.mesh_partitioning_parameters.min_ele_per_proc;
   const int max_global_procs = Core::Communication::num_mpi_ranks(comm);
   int min_global_procs = max_global_procs;
 
@@ -118,8 +118,7 @@ void Core::Rebalance::rebalance_discretization(Core::FE::Discretization& discret
   const int num_procs = std::min(max_global_procs, min_global_procs);
   rebalanceParams.set<std::string>("num parts", std::to_string(num_procs));
 
-  const auto rebalanceMethod = Teuchos::getIntegralValue<Core::Rebalance::RebalanceType>(
-      parameters.mesh_partitioning_parameters, "METHOD");
+  const auto rebalanceMethod = parameters.mesh_partitioning_parameters.rebalance_type;
 
   if (!Core::Communication::my_mpi_rank(comm))
     std::cout << "\nNumber of procs used for redistribution: " << num_procs << "\n";
