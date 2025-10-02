@@ -16,8 +16,7 @@ env:
 jobs:
   build_4c_image:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == '4C-multiphysics/4C'
-      }}
+    if: ${{ github.repository == '4C-multiphysics/4C' }}
     permissions:
       contents: read
       packages: write
@@ -47,11 +46,20 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:main
           labels: ${{ steps.meta.outputs.labels }}
+      # If the nightly tests are successful the docker image is tagged as stable
+      - name: Push Docker image as stable
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: docker/prebuilt_4C/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:stable
+          labels: ${{ steps.meta.outputs.labels }}
 
   build_4c_minimal_image:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == '4C-multiphysics/4C'
-      }}
+    if: ${{ github.repository == '4C-multiphysics/4C' }}
     permissions:
       contents: read
       packages: write
@@ -80,4 +88,14 @@ jobs:
           file: docker/prebuilt_4C_minimal/Dockerfile
           push: true
           tags: ${{ env.IMAGE_NAME }}-minimal:main
+          labels: ${{ steps.meta.outputs.labels }}
+      # If the nightly tests are successful the docker image is tagged as stable
+      - name: Push Docker image as stable
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: docker/prebuilt_4C_minimal
+          file: docker/prebuilt_4C_minimal/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE_NAME }}-minimal:stable
           labels: ${{ steps.meta.outputs.labels }}
