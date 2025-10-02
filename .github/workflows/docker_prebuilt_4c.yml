@@ -11,12 +11,17 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/4c-multiphysics/4c
+  IMAGE_NAME: ghcr.io/ppraegla/4c
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Hello World"
+
   build_4c_image:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == '4C-multiphysics/4C' }}
+    if: ${{ github.repository == 'ppraegla/4C' }}
     permissions:
       contents: read
       packages: write
@@ -59,7 +64,7 @@ jobs:
 
   build_4c_minimal_image:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == '4C-multiphysics/4C' }}
+    if: ${{ github.repository == 'ppraegla/4C' }}
     permissions:
       contents: read
       packages: write
