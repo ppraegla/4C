@@ -42,6 +42,15 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           labels: |
             org.opencontainers.image.description=Image containing the built 4C code
+      - name: Create tags
+        id: tags
+        # If the nightly tests are successful the docker image is additionally tagged as `stable`
+        run: |
+          TAGS="${{ env.IMAGE_NAME }}:main"
+          if [[ "${{ github.event.workflow_run.conclusion }}" == 'success' ]]; then
+            TAGS="$TAGS,${{ env.IMAGE_NAME }}:stable"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
@@ -49,17 +58,7 @@ jobs:
           context: .
           file: docker/prebuilt_4C/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_NAME }}:main
-          labels: ${{ steps.meta.outputs.labels }}
-      # If the nightly tests are successful the docker image is tagged as stable
-      - name: Push Docker image as stable
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-        with:
-          context: .
-          file: docker/prebuilt_4C/Dockerfile
-          push: true
-          tags: ${{ env.IMAGE_NAME }}:stable
+          tags: ${{ steps.tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
   build_4c_minimal_image:
