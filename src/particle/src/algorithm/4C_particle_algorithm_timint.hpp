@@ -152,8 +152,8 @@ namespace Particle
    * semi-implicit Euler time integration scheme of first order accuracy (also denoted as
    * semi-explicit Euler or symplectic Euler scheme)
    *
-   * \$f v_{n+1} = v_{n} + dt * a_{n}   \$f with \$f a_{n} = a( r_{n-1}, v_{n-1} ) \$f
-   * \$f x_{n+1} = x_{n} + dt * v_{n+1} \$f
+   * \f$ v_{n+1} = v_{n} + dt * a_{n}   \f$ with \f$ a_{n} = a( r_{n-1}, v_{n-1} ) \f$
+   * \f$ x_{n+1} = x_{n} + dt * v_{n+1} \f$
    *
    */
   class TimIntSemiImplicitEuler : public TimInt
@@ -194,9 +194,9 @@ namespace Particle
    * explicit velocity Verlet time integration scheme of second order accuracy (also denoted as
    * leapfrog scheme in kick-drift-kick form)
    *
-   * \$f v_{n+1/2} = v_{n}     + dt/2 * a_{n}     \$f with \$f a_{n}   = a( r_{n}, v_{n-1/2} )   \$f
-   * \$f x_{n+1}   = x_{n}     + dt   * v_{n+1/2} \$f
-   * \$f v_{n+1}   = v_{n+1/2} + dt/2 * a_{n+1}   \$f with \$f a_{n+1} = a( r_{n+1}, v_{n+1/2} ) \$f
+   * \f$ v_{n+1/2} = v_{n}     + dt/2 * a_{n}     \f$ with \f$ a_{n}   = a( r_{n}, v_{n-1/2} )   \f$
+   * \f$ x_{n+1}   = x_{n}     + dt   * v_{n+1/2} \f$
+   * \f$ v_{n+1}   = v_{n+1/2} + dt/2 * a_{n+1}   \f$ with \f$ a_{n+1} = a( r_{n+1}, v_{n+1/2} ) \f$
    *
    */
   class TimIntVelocityVerlet : public TimInt
