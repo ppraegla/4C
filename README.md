@@ -40,6 +40,7 @@ to address a plethora of physical problems by means of _computational mechanics_
 
 We aim to advance the frontiers of computational science and engineering by providing a versatile, extensible and open-source research software framework for the systematic development, analysis, and application of advanced numerical methods for modeling and simulation of complex multiphysics phenomena across scales and disciplines.
 
+
 ## Mission
 
 4C Multiphysics is a modular, parallel and open-source simulation environment tailored to the needs of researchers and computational scientists to enable and accelerate research in computational science and engineering. Our mission is to:
