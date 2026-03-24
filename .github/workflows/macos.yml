@@ -1,0 +1,21 @@
+name: macOS built test
+
+on:
+  schedule:
+    - cron: 3 4 * * 0
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build and test 4C on macOS
+    runs-on: macos-26
+    steps:
+      - name: Install the dependencies
+        run: |
+          echo "TODO to install the dependencies"
+          pwd
+          ls -l
+      - name: Build 4C
+        run: echo "TODO build 4C"
+      - name: Run tests
+        run: echo "TODO tests"
